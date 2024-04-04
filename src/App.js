@@ -1,7 +1,5 @@
 import { useState } from "react";
 import Navbar from "./Components/Navbar";
-import ListBox from "./Components/Box";
-import WatchedMoviesBox from "./Components/WatchedMoviesBox";
 import Main from "./Components/Main";
 import Logo from "./Components/Logo";
 import Search from "./Components/Search";
