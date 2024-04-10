@@ -10,6 +10,7 @@ import WatchedMoviesSummary from "./Components/WatchedMoviesSummary";
 import WatchedMoviesList from "./Components/WatchedMoviesList";
 import Loader from "./Utils/Loader";
 import Error from "./Utils/Error";
+import MovieDetails from "./Components/MovieDetails";
 
 const tempMovieData = [
   {
@@ -63,15 +64,18 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [querry, setQuerry] = useState("interstellar");
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const setQuerryHandler = (q) => {
+    setQuerry(q);
+  };
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const resp = await fetch(
-          `http://www.omsdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&s=${querry}`
+          `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&s=${querry}`
         );
-        console.log(resp);
         if (!resp.ok) {
           throw new Error("Something went wrong");
         }
@@ -80,6 +84,8 @@ export default function App() {
           throw new Error("Movie not found!");
         }
         setMovies(data.Search);
+        console.log(data.Search);
+        setError(null);
       } catch (err) {
         console.log(err);
         if (
@@ -94,13 +100,18 @@ export default function App() {
         setIsLoading(false);
       }
     };
+    if (!querry.length) {
+      setMovies([]);
+      setError(null);
+      return;
+    }
     fetchMovies();
-  }, []);
+  }, [querry]);
   return (
     <>
       <Navbar>
         <Logo />
-        <Search />
+        <Search querry={querry} onSetQuerry={setQuerryHandler} />
         <NumResults movies={movies} />
       </Navbar>
       <Main>
@@ -110,12 +121,28 @@ export default function App() {
           ) : error ? (
             <Error message={error} />
           ) : (
-            <Movies movies={movies} />
+            <Movies
+              movies={movies}
+              onMovieSelect={(movieId) =>
+                setSelectedMovie((prevState) =>
+                  prevState === movieId ? null : movieId
+                )
+              }
+            />
           )}
         </Box>
         <Box>
-          <WatchedMoviesSummary watched={watched} />
-          <WatchedMoviesList watched={watched} />
+          {selectedMovie ? (
+            <MovieDetails
+              movieId={selectedMovie}
+              onCloseMovie={() => setSelectedMovie(null)}
+            />
+          ) : (
+            <>
+              <WatchedMoviesSummary watched={watched} />
+              <WatchedMoviesList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
