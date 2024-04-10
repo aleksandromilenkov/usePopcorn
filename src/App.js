@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./Components/Navbar";
 import Main from "./Components/Main";
 import Logo from "./Components/Logo";
@@ -8,6 +8,8 @@ import Movies from "./Components/Movies";
 import Box from "./Components/Box";
 import WatchedMoviesSummary from "./Components/WatchedMoviesSummary";
 import WatchedMoviesList from "./Components/WatchedMoviesList";
+import Loader from "./Utils/Loader";
+import Error from "./Utils/Error";
 
 const tempMovieData = [
   {
@@ -56,8 +58,44 @@ const tempWatchedData = [
 ];
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [querry, setQuerry] = useState("interstellar");
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const resp = await fetch(
+          `http://www.omsdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&s=${querry}`
+        );
+        console.log(resp);
+        if (!resp.ok) {
+          throw new Error("Something went wrong");
+        }
+        const data = await resp.json();
+        if (data.Response === "False") {
+          throw new Error("Movie not found!");
+        }
+        setMovies(data.Search);
+      } catch (err) {
+        console.log(err);
+        if (
+          err?.message ===
+          "_Utils_Error__WEBPACK_IMPORTED_MODULE_11__.default is not a constructor"
+        ) {
+          setError("Movie not found");
+          return;
+        }
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMovies();
+  }, []);
   return (
     <>
       <Navbar>
@@ -67,7 +105,13 @@ export default function App() {
       </Navbar>
       <Main>
         <Box>
-          <Movies movies={movies} />
+          {isLoading ? (
+            <Loader />
+          ) : error ? (
+            <Error message={error} />
+          ) : (
+            <Movies movies={movies} />
+          )}
         </Box>
         <Box>
           <WatchedMoviesSummary watched={watched} />
