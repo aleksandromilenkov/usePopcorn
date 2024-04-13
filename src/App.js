@@ -68,6 +68,17 @@ export default function App() {
   const setQuerryHandler = (q) => {
     setQuerry(q);
   };
+  const setMovieToWatchedHandler = (movie) => {
+    if (watched.some((w) => w.imdbID === movie.imdbID)) {
+      return;
+    }
+    setWatched((prevState) => [...prevState, movie]);
+  };
+  const removeMovieFromWatchedHandler = (movieId) => {
+    setWatched((prevState) =>
+      prevState.filter((movie) => movie.imdbID !== movieId)
+    );
+  };
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -136,11 +147,17 @@ export default function App() {
             <MovieDetails
               movieId={selectedMovie}
               onCloseMovie={() => setSelectedMovie(null)}
+              onMovieSetToWatched={setMovieToWatchedHandler}
+              watchedMovies={watched}
+              onMovieRemoveFromWatched={removeMovieFromWatchedHandler}
             />
           ) : (
             <>
               <WatchedMoviesSummary watched={watched} />
-              <WatchedMoviesList watched={watched} />
+              <WatchedMoviesList
+                watched={watched}
+                onMovieRemoveFromWatched={removeMovieFromWatchedHandler}
+              />
             </>
           )}
         </Box>
