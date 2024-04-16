@@ -79,13 +79,21 @@ export default function App() {
       prevState.filter((movie) => movie.imdbID !== movieId)
     );
   };
+  const handleCloseMovie = () => {
+    setSelectedMovie(null);
+  };
   useEffect(() => {
+    const controller = new AbortController(); // this is js api just like fetch
     const fetchMovies = async () => {
       try {
         setIsLoading(true);
         setError(null);
+
         const resp = await fetch(
-          `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&s=${querry}`
+          `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&s=${querry}`,
+          {
+            signal: controller.signal,
+          }
         );
         if (!resp.ok) {
           throw new Error("Something went wrong");
@@ -106,6 +114,9 @@ export default function App() {
           setError("Movie not found");
           return;
         }
+        if (err === "AbortError") {
+          return;
+        }
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -117,7 +128,12 @@ export default function App() {
       return;
     }
     fetchMovies();
+    handleCloseMovie();
+    return () => {
+      controller.abort();
+    };
   }, [querry]);
+
   return (
     <>
       <Navbar>
@@ -146,7 +162,7 @@ export default function App() {
           {selectedMovie ? (
             <MovieDetails
               movieId={selectedMovie}
-              onCloseMovie={() => setSelectedMovie(null)}
+              onCloseMovie={handleCloseMovie}
               onMovieSetToWatched={setMovieToWatchedHandler}
               watchedMovies={watched}
               onMovieRemoveFromWatched={removeMovieFromWatchedHandler}

@@ -67,6 +67,17 @@ const MovieDetails = ({
       document.title = "usePopcorn";
     };
   }, [movie]);
+  useEffect(() => {
+    const callback = (e) => {
+      if (e.key === "Escape") {
+        onCloseMovie();
+      }
+    };
+    document.addEventListener("keyup", callback);
+    return () => {
+      document.removeEventListener("keyup", callback);
+    };
+  }, []);
   return isLoading ? (
     <Loader />
   ) : error ? (
