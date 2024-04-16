@@ -25,7 +25,6 @@ const MovieDetails = ({
       imdbRating: Number(movie.imdbRating),
       runtime: Number(movie.Runtime.split(" ")[0]),
     };
-    console.log(newWatchedMovie);
     if (isMovieSetToWatch) {
       onMovieRemoveFromWatched(movieId);
       onCloseMovie();
@@ -46,7 +45,6 @@ const MovieDetails = ({
           `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&i=${movieId}`
         );
         const data = await resp.json();
-        console.log(data);
         setMovie(data);
         isMovieSetToWatch &&
           setUserRating(
@@ -62,6 +60,13 @@ const MovieDetails = ({
     };
     fetchMovieDetails();
   }, [movieId]);
+  useEffect(() => {
+    if (!movie?.Title) return;
+    document.title = `Movie | ${movie?.Title}`;
+    return () => {
+      document.title = "usePopcorn";
+    };
+  }, [movie]);
   return isLoading ? (
     <Loader />
   ) : error ? (
