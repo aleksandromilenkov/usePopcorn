@@ -1,7 +1,6 @@
 import React from "react";
 
 const WatchedMovie = ({ movie, onMovieRemoveFromWatched }) => {
-  console.log(movie);
   return (
     <li key={movie.imdbID}>
       <img src={movie.poster} alt={`${movie.title} poster`} />

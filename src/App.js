@@ -60,10 +60,14 @@ const tempWatchedData = [
 
 export default function App() {
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(() => {
+    const watchedMovies = JSON.parse(localStorage.getItem("watchedMovies"));
+    return watchedMovies;
+    // setWatched(JSON.parse(localStorage.getItem("watchedMovies")));
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [querry, setQuerry] = useState("interstellar");
+  const [querry, setQuerry] = useState();
   const [selectedMovie, setSelectedMovie] = useState(null);
   const setQuerryHandler = (q) => {
     setQuerry(q);
@@ -82,6 +86,9 @@ export default function App() {
   const handleCloseMovie = () => {
     setSelectedMovie(null);
   };
+  useEffect(() => {
+    localStorage.setItem("watchedMovies", JSON.stringify(watched));
+  }, [watched]);
   useEffect(() => {
     const controller = new AbortController(); // this is js api just like fetch
     const fetchMovies = async () => {
@@ -122,7 +129,7 @@ export default function App() {
         setIsLoading(false);
       }
     };
-    if (!querry.length) {
+    if (!querry?.length) {
       setMovies([]);
       setError(null);
       return;
