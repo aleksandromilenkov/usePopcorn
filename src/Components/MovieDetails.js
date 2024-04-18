@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import StarRating from "../Utils/StarRating";
 import Loader from "../Utils/Loader";
 import Error from "../Utils/Error";
@@ -15,6 +15,12 @@ const MovieDetails = ({
   const [error, setError] = useState(null);
   const [userRating, setUserRating] = useState(null);
   const isMovieSetToWatch = watchedMovies.some((w) => w.imdbID === movieId);
+  // ref's value is not reseted when the component is re-rendered.
+  // ref does not re-render the component as well. that's why we decided to have ref here instead of state for storing the count variable.
+  const countRef = useRef(0);
+  useEffect(() => {
+    userRating && (countRef.current = countRef.current + 1);
+  }, [userRating]);
   const addToWatchedHandler = () => {
     const newWatchedMovie = {
       imdbID: movieId,
@@ -24,6 +30,7 @@ const MovieDetails = ({
       userRating: userRating,
       imdbRating: Number(movie.imdbRating),
       runtime: Number(movie.Runtime.split(" ")[0]),
+      countRatingDecisions: countRef.current,
     };
     if (isMovieSetToWatch) {
       onMovieRemoveFromWatched(movieId);
