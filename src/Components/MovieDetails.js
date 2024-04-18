@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import StarRating from "../Utils/StarRating";
 import Loader from "../Utils/Loader";
 import Error from "../Utils/Error";
+import { useKey } from "../Hooks/useKey";
 
 const MovieDetails = ({
   movieId,
@@ -74,17 +75,7 @@ const MovieDetails = ({
       document.title = "usePopcorn";
     };
   }, [movie]);
-  useEffect(() => {
-    const callback = (e) => {
-      if (e.key === "Escape") {
-        onCloseMovie();
-      }
-    };
-    document.addEventListener("keyup", callback);
-    return () => {
-      document.removeEventListener("keyup", callback);
-    };
-  }, []);
+  useKey("Escape", onCloseMovie);
   return isLoading ? (
     <Loader />
   ) : error ? (
