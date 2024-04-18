@@ -71,6 +71,7 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const setQuerryHandler = (q) => {
     setQuerry(q);
+    console.log(q);
   };
   const setMovieToWatchedHandler = (movie) => {
     if (watched.some((w) => w.imdbID === movie.imdbID)) {
