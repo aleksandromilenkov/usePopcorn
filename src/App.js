@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "./Components/Navbar";
 import Main from "./Components/Main";
 import Logo from "./Components/Logo";
@@ -11,6 +11,7 @@ import WatchedMoviesList from "./Components/WatchedMoviesList";
 import Loader from "./Utils/Loader";
 import Error from "./Utils/Error";
 import MovieDetails from "./Components/MovieDetails";
+import { useMovies } from "./Hooks/useMovies";
 
 const tempMovieData = [
   {
@@ -59,20 +60,19 @@ const tempWatchedData = [
 ];
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(() => {
     const watchedMovies = JSON.parse(localStorage.getItem("watchedMovies"));
     return watchedMovies;
-    // setWatched(JSON.parse(localStorage.getItem("watchedMovies")));
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [querry, setQuerry] = useState();
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const handleCloseMovie = useCallback(() => setSelectedMovie(null), []);
+  const [movies, isLoading, error] = useMovies(querry, handleCloseMovie);
   const setQuerryHandler = (q) => {
     setQuerry(q);
     console.log(q);
   };
+
   const setMovieToWatchedHandler = (movie) => {
     if (watched.some((w) => w.imdbID === movie.imdbID)) {
       return;
@@ -84,63 +84,10 @@ export default function App() {
       prevState.filter((movie) => movie.imdbID !== movieId)
     );
   };
-  const handleCloseMovie = () => {
-    setSelectedMovie(null);
-  };
+
   useEffect(() => {
     localStorage.setItem("watchedMovies", JSON.stringify(watched));
   }, [watched]);
-  useEffect(() => {
-    const controller = new AbortController(); // this is js api just like fetch
-    const fetchMovies = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const resp = await fetch(
-          `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_MY_API_KEY}&s=${querry}`,
-          {
-            signal: controller.signal,
-          }
-        );
-        if (!resp.ok) {
-          throw new Error("Something went wrong");
-        }
-        const data = await resp.json();
-        if (data.Response === "False") {
-          throw new Error("Movie not found!");
-        }
-        setMovies(data.Search);
-        console.log(data.Search);
-        setError(null);
-      } catch (err) {
-        console.log(err);
-        if (
-          err?.message ===
-          "_Utils_Error__WEBPACK_IMPORTED_MODULE_11__.default is not a constructor"
-        ) {
-          setError("Movie not found");
-          return;
-        }
-        if (err === "AbortError") {
-          return;
-        }
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (!querry?.length) {
-      setMovies([]);
-      setError(null);
-      return;
-    }
-    fetchMovies();
-    handleCloseMovie();
-    return () => {
-      controller.abort();
-    };
-  }, [querry]);
 
   return (
     <>
